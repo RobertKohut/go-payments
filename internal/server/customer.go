@@ -35,6 +35,14 @@ func (s *Server) GetCustomerById(ctx context.Context, req *payments.GetCustomerB
 		return nil, err
 	}
 
+	if c == nil {
+		resp := &payments.GetCustomerByIdResponse{
+			Customer: nil,
+		}
+
+		return resp, nil
+	}
+
 	resp := &payments.GetCustomerByIdResponse{
 		Customer: &payments.Customer{
 			ExtId: c.ExtId,

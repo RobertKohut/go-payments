@@ -7,10 +7,8 @@ import (
 )
 
 func (s *Server) CreateCustomer(ctx context.Context, req *payments.CreateCustomerRequest) (*payments.CreateCustomerResponse, error) {
-	// Implement the logic for creating a customer here.
-
 	customer := &entities.Customer{
-		OrgId:     req.GetOrgId(),
+		SourceId:  req.GetSourceId(),
 		AccountId: req.GetAccountId(),
 		Name:      req.GetName(),
 	}

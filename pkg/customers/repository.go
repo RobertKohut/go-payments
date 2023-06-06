@@ -10,7 +10,7 @@ import (
 
 type Repository interface {
 	InsertCustomer(customer *entities.Customer) (int64, error)
-	SelectCustomerByAccountId(id int64) (*entities.Customer, error)
+	SelectCustomerByAccountId(sourceId, accountId int64) (*entities.Customer, error)
 	DeleteCustomerBySourceId(customer *entities.Customer) error
 
 	AddCustomerCard(customer *entities.Customer, card *entities.Card) (int64, error)
@@ -55,14 +55,15 @@ func (r *repository) DeleteCustomerBySourceId(customer *entities.Customer) error
 	return nil
 }
 
-func (r *repository) SelectCustomerByAccountId(id int64) (*entities.Customer, error) {
+func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*entities.Customer, error) {
 	customer := &entities.Customer{}
 
 	stmt := `SELECT id, ext_id FROM customers 
-             WHERE account_id = ?
-             AND (flags & ?) = ?`
+             WHERE source_id = ?
+               AND account_id = ?
+               AND (flags & ?) = ?`
 
-	row := r.db.QueryRow(stmt, id, metadata.FlagsCustomerActive, metadata.FlagsCustomerActive)
+	row := r.db.QueryRow(stmt, sourceId, accountId, metadata.FlagsCustomerActive, metadata.FlagsCustomerActive)
 
 	switch err := row.Scan(
 		&customer.Id,

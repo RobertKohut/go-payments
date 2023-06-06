@@ -30,7 +30,10 @@ func (s *Server) CreateCustomer(ctx context.Context, req *payments.CreateCustome
 }
 
 func (s *Server) GetCustomerById(ctx context.Context, req *payments.GetCustomerByIdRequest) (*payments.GetCustomerByIdResponse, error) {
-	c, err := s.svc.CustomerSvc.GetCustomerById(req.GetAccountId())
+	sourceId := req.GetSourceId()
+	accountId := req.GetAccountId()
+
+	c, err := s.svc.CustomerSvc.GetCustomerById(sourceId, accountId)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 type Service interface {
-	GetCustomerById(id int64) (*entities.Customer, error)
+	GetCustomerById(sourceId, accountId int64) (*entities.Customer, error)
 	AddCustomer(customer *entities.Customer) (*string, error)
 	DeleteCustomer(customer *entities.Customer) error
 }
@@ -24,8 +24,8 @@ func NewService(payments payments.PaymentService, repo Repository) Service {
 	}
 }
 
-func (s *service) GetCustomerById(id int64) (*entities.Customer, error) {
-	customer, err := s.repo.SelectCustomerByAccountId(id)
+func (s *service) GetCustomerById(sourceId, accountId int64) (*entities.Customer, error) {
+	customer, err := s.repo.SelectCustomerByAccountId(sourceId, accountId)
 
 	if err != nil {
 		return nil, err

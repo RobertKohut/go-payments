@@ -28,3 +28,18 @@ func (s *Server) CreateCustomer(ctx context.Context, req *payments.CreateCustome
 
 	return resp, nil
 }
+
+func (s *Server) GetCustomerById(ctx context.Context, req *payments.GetCustomerByIdRequest) (*payments.GetCustomerByIdResponse, error) {
+	c, err := s.svc.CustomerSvc.GetCustomerById(req.GetAccountId())
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &payments.GetCustomerByIdResponse{
+		Customer: &payments.Customer{
+			ExtId: c.ExtId,
+		},
+	}
+
+	return resp, nil
+}

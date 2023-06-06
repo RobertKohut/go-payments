@@ -58,13 +58,15 @@ func (r *repository) DeleteCustomerBySourceId(customer *entities.Customer) error
 func (r *repository) SelectCustomerByAccountId(id int64) (*entities.Customer, error) {
 	customer := &entities.Customer{}
 
-	stmt := `SELECT id, name FROM customers WHERE account_id = ?`
+	stmt := `SELECT id, ext_id FROM customers 
+             WHERE account_id = ?
+             AND (flags & ?) = ?`
 
-	row := r.db.QueryRow(stmt, id)
+	row := r.db.QueryRow(stmt, id, metadata.FlagsCustomerActive, metadata.FlagsCustomerActive)
 
 	switch err := row.Scan(
 		&customer.Id,
-		&customer.Name,
+		&customer.ExtId,
 	); err {
 	case sql.ErrNoRows:
 		return nil, err

@@ -10,6 +10,7 @@ message Customer {
 
 service PaymentService {
 	rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
+	rpc GetCustomerById(GetCustomerByIdRequest) returns (GetCustomerByIdResponse) {}
 }
 
 message CreateCustomerRequest {
@@ -20,5 +21,16 @@ message CreateCustomerRequest {
 }
 
 message CreateCustomerResponse {
+	Customer customer = 1;
+}
+
+message GetCustomerByIdRequest {
+	int64 source_id = 1;
+	int64 org_id = 2;
+	int64 account_id = 3;
+	string ext_id = 4;
+}
+
+message GetCustomerByIdResponse {
 	Customer customer = 1;
 }

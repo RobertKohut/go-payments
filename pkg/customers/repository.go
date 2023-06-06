@@ -69,7 +69,7 @@ func (r *repository) SelectCustomerByAccountId(id int64) (*entities.Customer, er
 		&customer.ExtId,
 	); err {
 	case sql.ErrNoRows:
-		return nil, err
+		return nil, nil
 	case nil:
 		return customer, nil
 	default:

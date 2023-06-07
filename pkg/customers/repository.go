@@ -3,17 +3,17 @@ package customers
 import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
-	"github.com/robertkohut/go-payments/pkg/entities"
 	"github.com/robertkohut/go-payments/pkg/metadata"
+	pb "github.com/robertkohut/go-payments/proto"
 	"log"
 )
 
 type Repository interface {
-	InsertCustomer(customer *entities.Customer) (int64, error)
-	SelectCustomerByAccountId(sourceId, accountId int64) (*entities.Customer, error)
-	DeleteCustomerBySourceId(customer *entities.Customer) error
+	InsertCustomer(customer *pb.Customer) (int64, error)
+	SelectCustomerByAccountId(sourceId, accountId int64) (*pb.Customer, error)
+	DeleteCustomer(customer *pb.Customer) error
 
-	AddCustomerCard(customer *entities.Customer, card *entities.Card) (int64, error)
+	AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error)
 }
 
 type repository struct {
@@ -24,7 +24,7 @@ func NewRepository(db *sqlx.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) InsertCustomer(customer *entities.Customer) (int64, error) {
+func (r *repository) InsertCustomer(customer *pb.Customer) (int64, error) {
 	// TODO: Remove magic gateway_id
 	stmt := `INSERT INTO customers (gateway_id, source_id, account_id, ext_id, flags) VALUES (1, ?, ?, ?, ?)`
 
@@ -40,7 +40,7 @@ func (r *repository) InsertCustomer(customer *entities.Customer) (int64, error) 
 	return result.LastInsertId()
 }
 
-func (r *repository) DeleteCustomerBySourceId(customer *entities.Customer) error {
+func (r *repository) DeleteCustomer(customer *pb.Customer) error {
 	stmt := `UPDATE customers SET flags = flags &~ ? 
                  WHERE account_id = ?
                  AND (flags & ?) = ?`
@@ -55,8 +55,8 @@ func (r *repository) DeleteCustomerBySourceId(customer *entities.Customer) error
 	return nil
 }
 
-func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*entities.Customer, error) {
-	customer := &entities.Customer{}
+func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.Customer, error) {
+	customer := &pb.Customer{}
 
 	stmt := `SELECT id, ext_id FROM customers 
              WHERE source_id = ?
@@ -78,16 +78,30 @@ func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*enti
 	}
 }
 
-func (r *repository) AddCustomerCard(customer *entities.Customer, card *entities.Card) (int64, error) {
+func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error) {
 	stmt := `INSERT INTO cards (ext_id, customer_id, exp_month, exp_year, last_four)
 			 VALUES (?, ?, ?, ?, ?)`
+
+	knownCardBrands := map[string]bool{
+		"visa":       true,
+		"mastercard": true,
+		"amex":       true,
+		"discover":   true,
+		"jcb":        true,
+		"diners":     true,
+	}
+
+	if _, ok := knownCardBrands[card.Brand]; !ok {
+		log.Println("Unknown card brand: ", card.Brand, " for card: ", card.ExtId)
+		card.Brand = "unknown"
+	}
 
 	result, err := r.db.Exec(stmt,
 		card.ExtId,
 		customer.Id,
 		card.ExpMonth,
 		card.ExpYear,
-		card.LastFour,
+		card.Last4,
 	)
 
 	if err != nil {

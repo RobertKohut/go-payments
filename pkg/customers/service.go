@@ -2,14 +2,18 @@ package customers
 
 import (
 	"errors"
-	"github.com/robertkohut/go-payments/pkg/entities"
 	"github.com/robertkohut/go-payments/pkg/payments"
+	pb "github.com/robertkohut/go-payments/proto"
+	"log"
 )
 
 type Service interface {
-	GetCustomerById(sourceId, accountId int64) (*entities.Customer, error)
-	AddCustomer(customer *entities.Customer) (*string, error)
-	DeleteCustomer(customer *entities.Customer) error
+	AddCustomer(customer *pb.Customer) (*string, error)
+	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
+
+	GetCustomerById(sourceId, accountId int64) (*pb.Customer, error)
+
+	DeleteCustomer(customer *pb.Customer) error
 }
 
 type service struct {
@@ -24,7 +28,7 @@ func NewService(payments payments.PaymentService, repo Repository) Service {
 	}
 }
 
-func (s *service) GetCustomerById(sourceId, accountId int64) (*entities.Customer, error) {
+func (s *service) GetCustomerById(sourceId, accountId int64) (*pb.Customer, error) {
 	customer, err := s.repo.SelectCustomerByAccountId(sourceId, accountId)
 
 	if err != nil {
@@ -34,7 +38,7 @@ func (s *service) GetCustomerById(sourceId, accountId int64) (*entities.Customer
 	return customer, nil
 }
 
-func (s *service) AddCustomer(customer *entities.Customer) (*string, error) {
+func (s *service) AddCustomer(customer *pb.Customer) (*string, error) {
 	customerExtId, err := s.paymentSvc.CreateCustomer(customer)
 	if err != nil {
 		return nil, err
@@ -51,8 +55,8 @@ func (s *service) AddCustomer(customer *entities.Customer) (*string, error) {
 	return &customerExtId, nil
 }
 
-func (s *service) DeleteCustomer(customer *entities.Customer) error {
-	err := s.repo.DeleteCustomerBySourceId(customer)
+func (s *service) DeleteCustomer(customer *pb.Customer) error {
+	err := s.repo.DeleteCustomer(customer)
 	if err != nil {
 		return err
 	}
@@ -60,7 +64,19 @@ func (s *service) DeleteCustomer(customer *entities.Customer) error {
 	return nil
 }
 
-func (s *service) AddCustomerCard(customer *entities.Customer) (*entities.Card, error) {
+func (s *service) AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error) {
+	log.Println("AddCustomerCard", card)
+
+	_, err := s.paymentSvc.AddCustomerPaymentMethod(customer, card)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.repo.AddCustomerCard(customer, card)
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, errors.New("not implemented")
 	//card, err := s.paymentSvc.AddCustomerCard(customer)
 	//if err != nil {

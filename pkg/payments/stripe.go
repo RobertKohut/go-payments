@@ -1,7 +1,7 @@
 package payments
 
 import (
-	"github.com/robertkohut/go-payments/pkg/entities"
+	pb "github.com/robertkohut/go-payments/proto"
 	"github.com/stripe/stripe-go/v74"
 	"github.com/stripe/stripe-go/v74/client"
 	"log"
@@ -17,7 +17,7 @@ func NewStripeService(key string) PaymentService {
 	}
 }
 
-func (s *stripeService) CreateCustomer(customer *entities.Customer) (string, error) {
+func (s *stripeService) CreateCustomer(customer *pb.Customer) (string, error) {
 	params := &stripe.CustomerParams{
 		Description: stripe.String(customer.Name),
 	}
@@ -30,7 +30,7 @@ func (s *stripeService) CreateCustomer(customer *entities.Customer) (string, err
 	return c.ID, nil
 }
 
-func (s *stripeService) DeleteCustomer(customer *entities.Customer) error {
+func (s *stripeService) DeleteCustomer(customer *pb.Customer) error {
 	c, err := s.client.Customers.Del(customer.ExtId, nil)
 	if err != nil {
 		return err
@@ -39,4 +39,23 @@ func (s *stripeService) DeleteCustomer(customer *entities.Customer) error {
 	log.Println("Deleted stripe customer: ", c.ID)
 
 	return nil
+}
+
+func (s *stripeService) AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error) {
+	pm, err := s.client.PaymentMethods.Attach(
+		card.GetExtId(),
+		&stripe.PaymentMethodAttachParams{
+			Customer: stripe.String(customer.GetExtId()),
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	card = &pb.Card{
+		Brand: string(pm.Card.Brand),
+		Last4: pm.Card.Last4,
+	}
+
+	return card, nil
 }

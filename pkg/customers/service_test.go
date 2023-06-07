@@ -3,9 +3,9 @@ package customers
 import (
 	"github.com/robertkohut/go-payments/internal/config"
 	db "github.com/robertkohut/go-payments/internal/services/repository"
-	"github.com/robertkohut/go-payments/pkg/entities"
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	"github.com/robertkohut/go-payments/pkg/payments"
+	pb "github.com/robertkohut/go-payments/proto"
 	"testing"
 )
 
@@ -30,7 +30,7 @@ func TestAddCustomer(t *testing.T) {
 		t.Fatalf("Could not setup services: %v", err)
 	}
 
-	customer := &entities.Customer{
+	customer := &pb.Customer{
 		SourceId:  metadata.PaymentSourceStripe,
 		AccountId: 55,
 		Name:      "Test Customer",
@@ -50,7 +50,7 @@ func TestDeleteCustomer(t *testing.T) {
 		t.Fatalf("Could not setup services: %v", err)
 	}
 
-	customer := &entities.Customer{
+	customer := &pb.Customer{
 		SourceId:  1,
 		AccountId: 55,
 		ExtId:     "cus_O0vtZdCIxvw98R",

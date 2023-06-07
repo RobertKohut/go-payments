@@ -1,7 +1,6 @@
 package customers
 
 import (
-	"errors"
 	"github.com/robertkohut/go-payments/pkg/payments"
 	pb "github.com/robertkohut/go-payments/proto"
 	"log"
@@ -30,6 +29,8 @@ func NewService(payments payments.PaymentService, repo Repository) Service {
 
 func (s *service) GetCustomerById(sourceId, accountId int64) (*pb.Customer, error) {
 	customer, err := s.repo.SelectCustomerByAccountId(sourceId, accountId)
+
+	customer.Cards, err = s.repo.SelectCustomerCards(customer)
 
 	if err != nil {
 		return nil, err
@@ -72,22 +73,12 @@ func (s *service) AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card)
 		return nil, err
 	}
 
-	_, err = s.repo.AddCustomerCard(customer, card)
+	cardId, err := s.repo.AddCustomerCard(customer, card)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, errors.New("not implemented")
-	//card, err := s.paymentSvc.AddCustomerCard(customer)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//card.Id, err = s.repo.AddCustomerCard(customer.Id, card)
-	//if err != nil {
-	//	_ = s.paymentSvc.DeleteCustomerCard(customer, card)
-	//	return nil, err
-	//}
-	//
-	//return card, nil
+	card.Id = cardId
+
+	return card, nil
 }

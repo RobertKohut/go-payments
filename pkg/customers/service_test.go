@@ -36,7 +36,7 @@ func TestAddCustomer(t *testing.T) {
 		Name:      "Test Customer",
 	}
 
-	err = service.AddCustomer(customer)
+	_, err = service.AddCustomer(customer)
 	if err != nil {
 		t.Fatalf("Could not add customer: %v", err)
 	}

@@ -14,6 +14,7 @@ type Repository interface {
 	DeleteCustomer(customer *pb.Customer) error
 
 	AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error)
+	SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, error)
 }
 
 type repository struct {
@@ -110,4 +111,43 @@ func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int6
 	}
 
 	return result.LastInsertId()
+}
+
+func (r *repository) SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, error) {
+	var cards []*pb.Card
+
+	stmt := `SELECT id, brand, ext_id, exp_month, exp_year, last_four FROM cards 
+			 WHERE customer_id = ?
+			   AND (flags & ?) = ?`
+
+	rows, err := r.db.Query(stmt, customer.Id, metadata.FlagsCardActive, metadata.FlagsCardActive)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		card := &pb.Card{}
+
+		err := rows.Scan(
+			&card.Id,
+			&card.Brand,
+			&card.ExtId,
+			&card.ExpMonth,
+			&card.ExpYear,
+			&card.Last4,
+		)
+
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		cards = append(cards, card)
+	}
+
+	return cards, nil
 }

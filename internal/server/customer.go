@@ -45,9 +45,7 @@ func (s *Server) GetCustomerById(ctx context.Context, req *pb.GetCustomerByIdReq
 	}
 
 	resp := &pb.GetCustomerByIdResponse{
-		Customer: &pb.Customer{
-			ExtId: c.ExtId,
-		},
+		Customer: c,
 	}
 
 	return resp, nil

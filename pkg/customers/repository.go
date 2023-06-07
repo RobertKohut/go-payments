@@ -80,7 +80,7 @@ func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.C
 }
 
 func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error) {
-	stmt := `INSERT INTO cards (ext_id, customer_id, exp_month, exp_year, last_four)
+	stmt := `INSERT INTO cards (ext_id, customer_id, brand, exp_month, exp_year, last_four)
 			 VALUES (?, ?, ?, ?, ?)`
 
 	knownCardBrands := map[string]bool{
@@ -100,6 +100,7 @@ func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int6
 	result, err := r.db.Exec(stmt,
 		card.ExtId,
 		customer.Id,
+		card.Brand,
 		card.ExpMonth,
 		card.ExpYear,
 		card.Last4,

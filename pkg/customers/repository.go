@@ -81,7 +81,7 @@ func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.C
 
 func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error) {
 	stmt := `INSERT INTO cards (ext_id, customer_id, brand, exp_month, exp_year, last_four)
-			 VALUES (?, ?, ?, ?, ?)`
+			 VALUES (?, ?, ?, ?, ?, ?)`
 
 	knownCardBrands := map[string]bool{
 		"visa":       true,

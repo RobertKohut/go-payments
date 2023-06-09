@@ -13,6 +13,7 @@ type Service interface {
 
 	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
 	GetCustomerPaymentMethod(customer *pb.Customer, cardId int64) (*pb.Card, error)
+	SetCustomerPrimaryPaymentMethod(customer *pb.Customer, card *pb.Card) error
 	RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error
 }
 
@@ -93,6 +94,17 @@ func (s *service) GetCustomerPaymentMethod(customer *pb.Customer, cardId int64) 
 	}
 
 	return card, nil
+}
+
+func (s *service) SetCustomerPrimaryPaymentMethod(customer *pb.Customer, card *pb.Card) error {
+	log.Println("SetCustomerPrimaryPaymentMethod", card)
+
+	err := s.repo.UpdateCustomerPrimaryCard(customer, card)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error {

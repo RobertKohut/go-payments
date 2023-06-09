@@ -16,6 +16,7 @@ type Repository interface {
 	AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error)
 	SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, error)
 	SelectCustomerCard(customer *pb.Customer, cardId int64) (*pb.Card, error)
+	UpdateCustomerPrimaryCard(customer *pb.Customer, card *pb.Card) error
 	DeleteCustomerCard(customer *pb.Customer, card *pb.Card) error
 }
 
@@ -180,6 +181,20 @@ func (r *repository) SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, err
 	}
 
 	return cards, nil
+}
+
+func (r *repository) UpdateCustomerPrimaryCard(customer *pb.Customer, card *pb.Card) error {
+	stmt := `UPDATE customers SET primary_pm_id = ? 
+				 WHERE id = ?`
+
+	_, err := r.db.Exec(stmt, card.Id, customer.Id)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }
 
 func (r *repository) DeleteCustomerCard(customer *pb.Customer, card *pb.Card) error {

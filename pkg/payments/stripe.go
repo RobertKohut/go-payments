@@ -72,3 +72,17 @@ func (s *stripeService) RemoveCustomerPaymentMethod(_ *pb.Customer, card *pb.Car
 
 	return nil
 }
+
+func (s *stripeService) CreateCharge(customer *pb.Customer, card *pb.Card, amount int64) error {
+	_, err := s.client.Charges.New(&stripe.ChargeParams{
+		Amount:   stripe.Int64(amount),
+		Currency: stripe.String(string(stripe.CurrencyUSD)),
+		Customer: stripe.String(customer.GetExtId()),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

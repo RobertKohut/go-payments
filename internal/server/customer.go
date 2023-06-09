@@ -103,3 +103,30 @@ func (s *Server) RemoveCustomerPaymentMethod(ctx context.Context, req *pb.Remove
 
 	return resp, nil
 }
+
+func (s *Server) SetCustomerPrimaryPaymentMethod(ctx context.Context, req *pb.SetCustomerPrimaryPaymentMethodRequest) (*pb.SetCustomerPrimaryPaymentMethodResponse, error) {
+	sourceId := req.GetSourceId()
+	accountId := req.GetAccountId()
+	cardId := req.GetCardId()
+
+	customer, err := s.svc.CustomerSvc.GetCustomerById(sourceId, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	card, err := s.svc.CustomerSvc.GetCustomerPaymentMethod(customer, cardId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.svc.CustomerSvc.SetCustomerPrimaryPaymentMethod(customer, card)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &pb.SetCustomerPrimaryPaymentMethodResponse{
+		Success: true,
+	}
+
+	return resp, nil
+}

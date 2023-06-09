@@ -5,68 +5,108 @@ package payments;
 option go_package = "github.com/robertkohut/go-payments/proto/payments";
 
 message Customer {
-	int64 id = 1;
-	string name = 2;
-	int64 gateway_id = 3;
-	int64 source_id = 4;
-	int64 account_id = 5;
-	string ext_id = 6;
-	repeated Card cards = 7;
-	int64 flags = 8;
+  int64 id = 1;
+  string id_str = 2;
+  string name = 3;
+  int64 gateway_id = 4;
+  int64 source_id = 5;
+  int64 account_id = 6;
+  string ext_id = 7;
+  repeated Card cards = 8;
+  int64 flags = 9;
 }
 
 message Card {
-	int64 id = 1;
-	string ext_id = 2;
-	string brand = 3;
-	string last4 = 4;
-	uint32 exp_month = 5;
-	uint32 exp_year = 6;
+  int64 id = 1;
+  string ext_id = 2;
+  string brand = 3;
+  string last4 = 4;
+  uint32 exp_month = 5;
+  uint32 exp_year = 6;
+}
+
+message Invoice {
+  int64 id = 1;
+  int64 customer_id = 2;
+  int64 amount = 3;
+	int64 discount = 4;
+	int64 original_amount = 5;
+	string status = 6;
+	string currency = 7;
+	int64 flags = 8;
 }
 
 service PaymentService {
-	rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
-	rpc GetCustomerById(GetCustomerByIdRequest) returns (GetCustomerByIdResponse) {}
-	rpc AddCustomerPaymentMethod(AddCustomerPaymentMethodRequest) returns (AddCustomerPaymentMethodResponse) {}
-	rpc RemoveCustomerPaymentMethod(RemoveCustomerPaymentMethodRequest) returns (RemoveCustomerPaymentMethodResponse) {}
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
+  rpc GetCustomerById(GetCustomerByIdRequest) returns (GetCustomerByIdResponse) {}
+
+  rpc AddCustomerPaymentMethod(AddCustomerPaymentMethodRequest) returns (AddCustomerPaymentMethodResponse) {}
+  rpc RemoveCustomerPaymentMethod(RemoveCustomerPaymentMethodRequest) returns (RemoveCustomerPaymentMethodResponse) {}
+	rpc SetCustomerPrimaryPaymentMethod(SetCustomerPrimaryPaymentMethodRequest) returns (SetCustomerPrimaryPaymentMethodResponse) {}
+
+  rpc CreateCharge(CreateChargeRequest) returns (CreateChargeResponse) {}
 }
 
 message CreateCustomerRequest {
-	int64 source_id = 1;
-	int64 org_id = 2;
-	int64 account_id = 3;
-	string name = 4;
+  int64 source_id = 1;
+  int64 org_id = 2;
+  int64 account_id = 3;
+  string name = 4;
 }
 
 message CreateCustomerResponse {
-	Customer customer = 1;
+  Customer customer = 1;
 }
 
 message GetCustomerByIdRequest {
-	int64 source_id = 1;
-	int64 account_id = 2;
+  int64 source_id = 1;
+  int64 account_id = 2;
 }
 
 message GetCustomerByIdResponse {
-	Customer customer = 1;
+  Customer customer = 1;
 }
 
 message AddCustomerPaymentMethodRequest {
-	int64 source_id = 1;
-	int64 account_id = 2;
-	Card card = 3;
+  int64 source_id = 1;
+  int64 account_id = 2;
+  Card card = 3;
 }
 
 message AddCustomerPaymentMethodResponse {
-	bool success = 1;
+  bool success = 1;
 }
 
 message RemoveCustomerPaymentMethodRequest {
+  int64 source_id = 1;
+  int64 account_id = 2;
+  int64 card_id = 3;
+}
+
+message RemoveCustomerPaymentMethodResponse {
+  bool success = 1;
+}
+
+message SetCustomerPrimaryPaymentMethodRequest {
 	int64 source_id = 1;
 	int64 account_id = 2;
 	int64 card_id = 3;
 }
 
-message RemoveCustomerPaymentMethodResponse {
+message SetCustomerPrimaryPaymentMethodResponse {
 	bool success = 1;
+}
+
+message CreateChargeRequest {
+  int64 source_id = 1;
+  int64 account_id = 2;
+  int64 amount = 4;
+  string currency = 5;
+
+  // Optional: The invoice ID to associate with this charge.
+  int64 invoice_id = 6;
+}
+
+message CreateChargeResponse {
+  bool success = 1;
 }

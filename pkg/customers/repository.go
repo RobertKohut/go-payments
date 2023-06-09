@@ -15,6 +15,8 @@ type Repository interface {
 
 	AddCustomerCard(customer *pb.Customer, card *pb.Card) (int64, error)
 	SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, error)
+	SelectCustomerCard(customer *pb.Customer, cardId int64) (*pb.Card, error)
+	DeleteCustomerCard(customer *pb.Customer, card *pb.Card) error
 }
 
 type repository struct {
@@ -114,6 +116,33 @@ func (r *repository) AddCustomerCard(customer *pb.Customer, card *pb.Card) (int6
 	return result.LastInsertId()
 }
 
+func (r *repository) SelectCustomerCard(customer *pb.Customer, cardId int64) (*pb.Card, error) {
+	card := &pb.Card{}
+
+	stmt := `SELECT id, brand, ext_id, exp_month, exp_year, last_four FROM cards 
+			 WHERE id = ?
+			   AND customer_id = ?
+			   AND (flags & ?) = ?`
+
+	row := r.db.QueryRow(stmt, cardId, customer.Id, metadata.FlagsCardActive, metadata.FlagsCardActive)
+
+	switch err := row.Scan(
+		&card.Id,
+		&card.Brand,
+		&card.ExtId,
+		&card.ExpMonth,
+		&card.ExpYear,
+		&card.Last4,
+	); err {
+	case sql.ErrNoRows:
+		return nil, err
+	case nil:
+		return card, nil
+	default:
+		return nil, err
+	}
+}
+
 func (r *repository) SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, error) {
 	var cards []*pb.Card
 
@@ -151,4 +180,19 @@ func (r *repository) SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, err
 	}
 
 	return cards, nil
+}
+
+func (r *repository) DeleteCustomerCard(customer *pb.Customer, card *pb.Card) error {
+	stmt := `UPDATE cards SET flags = flags &~ ? 
+				 WHERE customer_id = ?
+				   AND id = ?`
+
+	_, err := r.db.Exec(stmt, metadata.FlagsCardActive, customer.Id, card.Id)
+
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
 }

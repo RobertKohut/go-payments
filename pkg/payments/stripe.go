@@ -59,3 +59,16 @@ func (s *stripeService) AddCustomerPaymentMethod(customer *pb.Customer, card *pb
 
 	return card, nil
 }
+
+func (s *stripeService) RemoveCustomerPaymentMethod(_ *pb.Customer, card *pb.Card) error {
+	_, err := s.client.PaymentMethods.Detach(
+		card.GetExtId(),
+		&stripe.PaymentMethodDetachParams{},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

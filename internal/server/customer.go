@@ -76,3 +76,30 @@ func (s *Server) AddCustomerPaymentMethod(ctx context.Context, req *pb.AddCustom
 
 	return resp, nil
 }
+
+func (s *Server) RemoveCustomerPaymentMethod(ctx context.Context, req *pb.RemoveCustomerPaymentMethodRequest) (*pb.RemoveCustomerPaymentMethodResponse, error) {
+	sourceId := req.GetSourceId()
+	accountId := req.GetAccountId()
+	cardId := req.GetCardId()
+
+	customer, err := s.svc.CustomerSvc.GetCustomerById(sourceId, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	card, err := s.svc.CustomerSvc.GetCustomerPaymentMethod(customer, cardId)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.svc.CustomerSvc.RemoveCustomerPaymentMethod(customer, card)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &pb.RemoveCustomerPaymentMethodResponse{
+		Success: true,
+	}
+
+	return resp, nil
+}

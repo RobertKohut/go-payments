@@ -8,11 +8,12 @@ import (
 
 type Service interface {
 	AddCustomer(customer *pb.Customer) (*string, error)
-	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
-
 	GetCustomerById(sourceId, accountId int64) (*pb.Customer, error)
-
 	DeleteCustomer(customer *pb.Customer) error
+
+	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
+	GetCustomerPaymentMethod(customer *pb.Customer, cardId int64) (*pb.Card, error)
+	RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error
 }
 
 type service struct {
@@ -81,4 +82,31 @@ func (s *service) AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card)
 	card.Id = cardId
 
 	return card, nil
+}
+
+func (s *service) GetCustomerPaymentMethod(customer *pb.Customer, cardId int64) (*pb.Card, error) {
+	log.Println("GetCustomerCard", cardId)
+
+	card, err := s.repo.SelectCustomerCard(customer, cardId)
+	if err != nil {
+		return nil, err
+	}
+
+	return card, nil
+}
+
+func (s *service) RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error {
+	log.Println("RemoveCustomerCard", card)
+
+	err := s.paymentSvc.RemoveCustomerPaymentMethod(customer, card)
+	if err != nil {
+		return err
+	}
+
+	err = s.repo.DeleteCustomerCard(customer, card)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

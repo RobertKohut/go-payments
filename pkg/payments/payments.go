@@ -9,6 +9,7 @@ type PaymentService interface {
 	CreateCustomer(customer *pb.Customer) (string, error)
 	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
 	DeleteCustomer(customer *pb.Customer) error
+	RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error
 }
 
 func NewService(gateway string, cfg *config.Configuration) PaymentService {

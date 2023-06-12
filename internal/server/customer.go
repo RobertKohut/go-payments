@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	pb "github.com/robertkohut/go-payments/proto"
 	"log"
 )
@@ -126,6 +127,62 @@ func (s *Server) SetCustomerPrimaryPaymentMethod(ctx context.Context, req *pb.Se
 
 	resp := &pb.SetCustomerPrimaryPaymentMethodResponse{
 		Success: true,
+	}
+
+	return resp, nil
+}
+
+func (s *Server) CreateCharge(ctx context.Context, req *pb.CreateChargeRequest) (*pb.CreateChargeResponse, error) {
+	const (
+		errInvalidInput      = "invalid input"
+		errSourceIDRequired  = "source id is required"
+		errAccountIDRequired = "account id is required"
+		errCurrencyRequired  = "currency is required"
+		errNoPrimaryCardSet  = "no primary card set"
+	)
+
+	if req.GetSourceId() == 0 {
+		return nil, fmt.Errorf("%w: %s", errInvalidInput, errSourceIDRequired)
+	}
+
+	if req.GetAccountId() == 0 {
+		return nil, fmt.Errorf("%w: %s", errInvalidInput, errAccountIDRequired)
+	}
+
+	if req.GetCharge().Currency == "" {
+		return nil, fmt.Errorf("%w: %s", errInvalidInput, errCurrencyRequired)
+	}
+
+	charge := req.GetCharge()
+	cardId := charge.GetPmId()
+
+	customer, err := s.svc.CustomerSvc.GetCustomerById(req.GetSourceId(), req.GetAccountId())
+	if err != nil {
+		return nil, err
+	}
+
+	// A default card was not set. Use the primary card
+	if cardId == 0 {
+		cardId = customer.GetPrimaryCardId()
+
+		// No primary card was set. Use the first card
+		if cardId == 0 {
+			return nil, fmt.Errorf("%w: %s", errInvalidInput, errNoPrimaryCardSet)
+		}
+	}
+
+	card, err := s.svc.CustomerSvc.GetCustomerPaymentMethod(customer, cardId)
+	if err != nil {
+		return nil, err
+	}
+
+	charge, err = s.svc.ChargeSvc.ChargeCustomerPaymentMethod(customer, card, charge)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &pb.CreateChargeResponse{
+		Charge: charge,
 	}
 
 	return resp, nil

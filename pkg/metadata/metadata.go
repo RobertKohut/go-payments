@@ -12,3 +12,9 @@ const (
 const (
 	FlagsCustomerActive = 1 << iota
 )
+
+// HashId Service Constants
+const (
+	HDInvoiceId = 50
+	HDChargeId  = 51
+)

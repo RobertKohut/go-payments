@@ -11,7 +11,7 @@ type PaymentService interface {
 
 	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
 	RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error
-	CreateCharge(customer *pb.Customer, card *pb.Card, amount int64) error
+	CreateCharge(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error)
 }
 
 func NewService(gateway string, cfg *config.Configuration) PaymentService {

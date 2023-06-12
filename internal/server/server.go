@@ -1,6 +1,8 @@
 package server
 
 import (
+	"github.com/robertkohut/go-payments/internal/services/hashid"
+	"github.com/robertkohut/go-payments/pkg/charges"
 	"github.com/robertkohut/go-payments/pkg/customers"
 	"github.com/robertkohut/go-payments/pkg/payments"
 	"log"
@@ -26,14 +28,19 @@ func NewServer(cfg *config.Configuration) *Server {
 		log.Panic("Unable to connect to database")
 	}
 
+	hashIdService, _ := hashid.New(&cfg.HashId)
+
 	ps := payments.NewService("stripe", cfg)
-	cs := customers.NewService(ps, customers.NewRepository(db))
+	customerSvc := customers.NewService(ps, customers.NewRepository(db))
+	chargesSvc := charges.NewService(ps, charges.NewRepository(db), hashIdService)
 
 	return &Server{
 		config: cfg,
 		svc: &services.Services{
 			DB:          db,
-			CustomerSvc: cs,
+			HashId:      hashIdService,
+			CustomerSvc: customerSvc,
+			ChargeSvc:   chargesSvc,
 		},
 	}
 }

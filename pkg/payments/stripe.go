@@ -73,16 +73,32 @@ func (s *stripeService) RemoveCustomerPaymentMethod(_ *pb.Customer, card *pb.Car
 	return nil
 }
 
-func (s *stripeService) CreateCharge(customer *pb.Customer, card *pb.Card, amount int64) error {
-	_, err := s.client.Charges.New(&stripe.ChargeParams{
-		Amount:   stripe.Int64(amount),
-		Currency: stripe.String(string(stripe.CurrencyUSD)),
-		Customer: stripe.String(customer.GetExtId()),
-	})
-
-	if err != nil {
-		return err
+func (s *stripeService) CreateCharge(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error) {
+	params := &stripe.PaymentIntentParams{
+		Amount:        stripe.Int64(charge.GetAmount()),
+		Currency:      stripe.String(string(stripe.CurrencyUSD)),
+		Customer:      stripe.String(customer.GetExtId()),
+		PaymentMethod: stripe.String(card.GetExtId()),
+		Description:   stripe.String(charge.GetDescription()),
 	}
 
-	return nil
+	pi, err := s.client.PaymentIntents.New(params)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Created stripe payment intent: ", pi.ID)
+
+	confirmParams := &stripe.PaymentIntentConfirmParams{
+		PaymentMethod: stripe.String(card.GetExtId()), // Card ID.
+	}
+
+	pi, err = s.client.PaymentIntents.Confirm(pi.ID, confirmParams)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Confirmed stripe payment intent: ", pi.ID)
+
+	return &pi.ID, nil
 }

@@ -8,6 +8,7 @@ import (
 type Configuration struct {
 	App    *AppConfig
 	DB     *DBConfig
+	HashId HashIdConfig
 	Stripe *StripeConfig
 }
 
@@ -23,6 +24,12 @@ type DBConfig struct {
 	User string
 	Pass string
 	Name string
+}
+
+type HashIdConfig struct {
+	Salt      string
+	Alphabet  string
+	MinLength int
 }
 
 type StripeConfig struct {
@@ -59,6 +66,11 @@ func GetConfig(path string) *Configuration {
 			User: config.GetString("db.user"),
 			Pass: config.GetString("db.pass"),
 			Name: config.GetString("db.name"),
+		},
+		HashId: HashIdConfig{
+			Salt:      config.GetString("hashid.salt"),
+			Alphabet:  config.GetString("hashid.alphabet"),
+			MinLength: config.GetInt("hashid.min-length"),
 		},
 		Stripe: &StripeConfig{
 			PublishableKey: config.GetString("stripe.pk"),

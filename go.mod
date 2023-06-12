@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/jmoiron/sqlx v1.3.5
+	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/viper v1.16.0
 	github.com/stripe/stripe-go/v74 v74.21.0
 	google.golang.org/grpc v1.55.0
@@ -26,8 +27,7 @@ require (
 	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
-	google.golang.org/api v0.126.0 // indirect
-	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230530153820-e85fd2cbaebc // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

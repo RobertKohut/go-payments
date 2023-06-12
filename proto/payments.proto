@@ -5,35 +5,43 @@ package payments;
 option go_package = "github.com/robertkohut/go-payments/proto/payments";
 
 message Customer {
-  int64 id = 1;
-  string id_str = 2;
+  int64 id = 1 [json_name = "-"];
+  string id_str = 2 [json_name = "id"];
   string name = 3;
   int64 gateway_id = 4;
   int64 source_id = 5;
   int64 account_id = 6;
   string ext_id = 7;
   repeated Card cards = 8;
-  int64 flags = 9;
+  int64 primary_card_id = 9;
+  int64 flags = 10;
 }
 
 message Card {
-  int64 id = 1;
-  string ext_id = 2;
-  string brand = 3;
-  string last4 = 4;
-  uint32 exp_month = 5;
-  uint32 exp_year = 6;
+  int64 id = 1 [json_name = "-"];
+  string id_str = 2 [json_name = "id"];
+  string ext_id = 3;
+  string brand = 4;
+  string last4 = 5;
+  uint32 exp_month = 6;
+  uint32 exp_year = 7;
 }
 
-message Invoice {
-  int64 id = 1;
-  int64 customer_id = 2;
-  int64 amount = 3;
-	int64 discount = 4;
-	int64 original_amount = 5;
-	string status = 6;
-	string currency = 7;
-	int64 flags = 8;
+message Charge {
+  int64 id = 1 [json_name = "-"];
+  string id_str = 2 [json_name = "id"];
+  string ext_id = 3;
+  int64 gateway_id = 4;
+  int64 customer_id = 5;
+  string pm_type = 6;
+  int64 pm_id = 7;
+  int64 amount = 8;
+  string currency = 9;
+  int64 currency_id = 10;
+  string description = 11;
+  string status = 12;
+  int64 created_at = 13;
+  int64 flags = 14;
 }
 
 service PaymentService {
@@ -45,6 +53,11 @@ service PaymentService {
 	rpc SetCustomerPrimaryPaymentMethod(SetCustomerPrimaryPaymentMethodRequest) returns (SetCustomerPrimaryPaymentMethodResponse) {}
 
   rpc CreateCharge(CreateChargeRequest) returns (CreateChargeResponse) {}
+
+  // Invoices
+//  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse);
+//  rpc GetInvoiceById(GetInvoiceByIdRequest) returns (GetInvoiceByIdResponse);
+//  rpc GetInvoicesByCustomerId(GetInvoicesByCustomerIdRequest) returns (GetInvoicesByCustomerIdResponse);
 }
 
 message CreateCustomerRequest {
@@ -100,13 +113,10 @@ message SetCustomerPrimaryPaymentMethodResponse {
 message CreateChargeRequest {
   int64 source_id = 1;
   int64 account_id = 2;
-  int64 amount = 4;
-  string currency = 5;
-
-  // Optional: The invoice ID to associate with this charge.
-  int64 invoice_id = 6;
+  int64 invoice_id = 3; // Optional: The invoice ID to associate with this charge.
+  Charge charge = 4;
 }
 
 message CreateChargeResponse {
-  bool success = 1;
+  Charge charge = 1;
 }

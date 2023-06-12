@@ -62,7 +62,7 @@ func (r *repository) DeleteCustomer(customer *pb.Customer) error {
 func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.Customer, error) {
 	customer := &pb.Customer{}
 
-	stmt := `SELECT id, ext_id FROM customers 
+	stmt := `SELECT id, ext_id, primary_pm_id FROM customers 
              WHERE source_id = ?
                AND account_id = ?
                AND (flags & ?) = ?`
@@ -72,6 +72,7 @@ func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.C
 	switch err := row.Scan(
 		&customer.Id,
 		&customer.ExtId,
+		&customer.PrimaryCardId,
 	); err {
 	case sql.ErrNoRows:
 		return nil, nil

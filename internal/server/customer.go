@@ -73,6 +73,7 @@ func (s *Server) AddCustomerPaymentMethod(ctx context.Context, req *pb.AddCustom
 
 	resp := &pb.AddCustomerPaymentMethodResponse{
 		Success: true,
+		Card:    c,
 	}
 
 	return resp, nil

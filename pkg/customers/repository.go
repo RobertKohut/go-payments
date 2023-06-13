@@ -3,6 +3,7 @@ package customers
 import (
 	"database/sql"
 	"github.com/jmoiron/sqlx"
+	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	pb "github.com/robertkohut/go-payments/proto"
 	"log"
@@ -22,10 +23,14 @@ type Repository interface {
 
 type repository struct {
 	db *sqlx.DB
+	hd *hashid.Service
 }
 
-func NewRepository(db *sqlx.DB) Repository {
-	return &repository{db: db}
+func NewRepository(db *sqlx.DB, hd *hashid.Service) Repository {
+	return &repository{
+		db: db,
+		hd: hd,
+	}
 }
 
 func (r *repository) InsertCustomer(customer *pb.Customer) (int64, error) {
@@ -177,6 +182,8 @@ func (r *repository) SelectCustomerCards(customer *pb.Customer) ([]*pb.Card, err
 			log.Println(err)
 			return nil, err
 		}
+
+		card.IdStr, _ = r.hd.Encode([]int64{card.Id, metadata.HDCardId})
 
 		cards = append(cards, card)
 	}

@@ -17,4 +17,5 @@ const (
 const (
 	HDInvoiceId = 50
 	HDChargeId  = 51
+	HDCardId    = 52
 )

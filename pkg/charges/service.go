@@ -5,11 +5,13 @@ import (
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	"github.com/robertkohut/go-payments/pkg/payments"
 	pb "github.com/robertkohut/go-payments/proto"
+	"google.golang.org/protobuf/types/known/structpb"
 	"log"
 )
 
 type Service interface {
 	ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
+	GetCustomerCharges(customer *pb.Customer, filter *pb.Filters) ([]*pb.Charge, error)
 }
 
 type service struct {
@@ -65,4 +67,14 @@ func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Ca
 	charge.Id = chargeId
 
 	return charge, nil
+}
+
+func (s *service) GetCustomerCharges(customer *pb.Customer, filter *pb.Filters) ([]*pb.Charge, error) {
+	filter.Filters = append(filter.GetFilters(), &pb.Filter{
+		Column:   "customer_id",
+		Operator: "=",
+		Value:    structpb.NewNumberValue(float64(customer.Id)),
+	})
+
+	return s.repo.SelectCharges(filter)
 }

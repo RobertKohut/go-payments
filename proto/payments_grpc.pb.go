@@ -25,6 +25,7 @@ const (
 	PaymentService_RemoveCustomerPaymentMethod_FullMethodName     = "/payments.PaymentService/RemoveCustomerPaymentMethod"
 	PaymentService_SetCustomerPrimaryPaymentMethod_FullMethodName = "/payments.PaymentService/SetCustomerPrimaryPaymentMethod"
 	PaymentService_CreateCharge_FullMethodName                    = "/payments.PaymentService/CreateCharge"
+	PaymentService_RetrieveCustomerCharges_FullMethodName         = "/payments.PaymentService/RetrieveCustomerCharges"
 )
 
 // PaymentServiceClient is the client API for PaymentService service.
@@ -37,6 +38,7 @@ type PaymentServiceClient interface {
 	RemoveCustomerPaymentMethod(ctx context.Context, in *RemoveCustomerPaymentMethodRequest, opts ...grpc.CallOption) (*RemoveCustomerPaymentMethodResponse, error)
 	SetCustomerPrimaryPaymentMethod(ctx context.Context, in *SetCustomerPrimaryPaymentMethodRequest, opts ...grpc.CallOption) (*SetCustomerPrimaryPaymentMethodResponse, error)
 	CreateCharge(ctx context.Context, in *CreateChargeRequest, opts ...grpc.CallOption) (*CreateChargeResponse, error)
+	RetrieveCustomerCharges(ctx context.Context, in *RetrieveCustomerChargesRequest, opts ...grpc.CallOption) (*RetrieveCustomerChargesResponse, error)
 }
 
 type paymentServiceClient struct {
@@ -101,6 +103,15 @@ func (c *paymentServiceClient) CreateCharge(ctx context.Context, in *CreateCharg
 	return out, nil
 }
 
+func (c *paymentServiceClient) RetrieveCustomerCharges(ctx context.Context, in *RetrieveCustomerChargesRequest, opts ...grpc.CallOption) (*RetrieveCustomerChargesResponse, error) {
+	out := new(RetrieveCustomerChargesResponse)
+	err := c.cc.Invoke(ctx, PaymentService_RetrieveCustomerCharges_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentServiceServer is the server API for PaymentService service.
 // All implementations must embed UnimplementedPaymentServiceServer
 // for forward compatibility
@@ -111,6 +122,7 @@ type PaymentServiceServer interface {
 	RemoveCustomerPaymentMethod(context.Context, *RemoveCustomerPaymentMethodRequest) (*RemoveCustomerPaymentMethodResponse, error)
 	SetCustomerPrimaryPaymentMethod(context.Context, *SetCustomerPrimaryPaymentMethodRequest) (*SetCustomerPrimaryPaymentMethodResponse, error)
 	CreateCharge(context.Context, *CreateChargeRequest) (*CreateChargeResponse, error)
+	RetrieveCustomerCharges(context.Context, *RetrieveCustomerChargesRequest) (*RetrieveCustomerChargesResponse, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
 
@@ -135,6 +147,9 @@ func (UnimplementedPaymentServiceServer) SetCustomerPrimaryPaymentMethod(context
 }
 func (UnimplementedPaymentServiceServer) CreateCharge(context.Context, *CreateChargeRequest) (*CreateChargeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCharge not implemented")
+}
+func (UnimplementedPaymentServiceServer) RetrieveCustomerCharges(context.Context, *RetrieveCustomerChargesRequest) (*RetrieveCustomerChargesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetrieveCustomerCharges not implemented")
 }
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
 
@@ -257,6 +272,24 @@ func _PaymentService_CreateCharge_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PaymentService_RetrieveCustomerCharges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RetrieveCustomerChargesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).RetrieveCustomerCharges(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PaymentService_RetrieveCustomerCharges_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).RetrieveCustomerCharges(ctx, req.(*RetrieveCustomerChargesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -287,6 +320,10 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateCharge",
 			Handler:    _PaymentService_CreateCharge_Handler,
+		},
+		{
+			MethodName: "RetrieveCustomerCharges",
+			Handler:    _PaymentService_RetrieveCustomerCharges_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

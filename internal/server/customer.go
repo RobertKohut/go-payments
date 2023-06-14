@@ -133,6 +133,28 @@ func (s *Server) SetCustomerPrimaryPaymentMethod(ctx context.Context, req *pb.Se
 	return resp, nil
 }
 
+func (s *Server) RetrieveCustomerCharges(ctx context.Context, req *pb.RetrieveCustomerChargesRequest) (*pb.RetrieveCustomerChargesResponse, error) {
+	sourceId := req.GetSourceId()
+	accountId := req.GetAccountId()
+	filters := req.GetFilters()
+
+	customer, err := s.svc.CustomerSvc.GetCustomerById(sourceId, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	charges, err := s.svc.ChargeSvc.GetCustomerCharges(customer, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	resp := &pb.RetrieveCustomerChargesResponse{
+		Charges: charges,
+	}
+
+	return resp, nil
+}
+
 func (s *Server) CreateCharge(ctx context.Context, req *pb.CreateChargeRequest) (*pb.CreateChargeResponse, error) {
 	const (
 		errInvalidInput      = "invalid input"

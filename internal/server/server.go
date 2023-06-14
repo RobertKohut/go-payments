@@ -32,7 +32,7 @@ func NewServer(cfg *config.Configuration) *Server {
 
 	ps := payments.NewService("stripe", cfg)
 	customerSvc := customers.NewService(ps, customers.NewRepository(db, hashIdService))
-	chargesSvc := charges.NewService(ps, charges.NewRepository(db), hashIdService)
+	chargesSvc := charges.NewService(ps, charges.NewRepository(db, hashIdService), hashIdService)
 
 	return &Server{
 		config: cfg,

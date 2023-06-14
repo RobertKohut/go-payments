@@ -46,7 +46,6 @@ message Charge {
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
   int64 flags = 15;
-  string description_ext = 16;
 }
 
 service PaymentService {

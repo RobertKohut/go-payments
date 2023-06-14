@@ -43,3 +43,33 @@ WantedBy=multi-user.target
 ```
 systemctl enable payments
 ```
+
+### Update logrotate
+/etc/logrotate.d/payments
+
+```
+/var/log/payments/*.log {
+    size 1M
+    create 0640 root root
+    daily
+    rotate 10
+    missingok
+    notifempty
+    compress
+    delaycompress
+    sharedscripts
+    postrotate
+        /bin/kill -HUP `pgrep rsyslog 2> /dev/null` 2> /dev/null || true
+    endscript
+}
+```
+
+### Start the service
+```
+systemctl start payments
+```
+
+### Check the status
+```
+systemctl status payments
+```

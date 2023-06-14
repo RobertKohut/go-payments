@@ -70,6 +70,10 @@ func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Ca
 }
 
 func (s *service) GetCustomerCharges(customer *pb.Customer, filter *pb.Filters) ([]*pb.Charge, error) {
+	if filter == nil {
+		filter = &pb.Filters{}
+	}
+
 	filter.Filters = append(filter.GetFilters(), &pb.Filter{
 		Column:   "customer_id",
 		Operator: "=",

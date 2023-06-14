@@ -31,6 +31,9 @@ func NewService(payments payments.PaymentService, repo Repository) Service {
 
 func (s *service) GetCustomerById(sourceId, accountId int64) (*pb.Customer, error) {
 	customer, err := s.repo.SelectCustomerByAccountId(sourceId, accountId)
+	if err != nil {
+		return nil, err
+	}
 
 	customer.Cards, err = s.repo.SelectCustomerCards(customer)
 

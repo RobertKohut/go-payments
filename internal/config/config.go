@@ -43,6 +43,8 @@ func GetConfig(path string) *Configuration {
 	config.SetConfigName("config")
 	config.AddConfigPath(".")
 
+	log.Println("Loading config file from " + path)
+
 	if path != "" {
 		config.AddConfigPath(path)
 	}

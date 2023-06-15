@@ -23,7 +23,7 @@ User=root
 Group=root
 
 WorkingDirectory=/usr/share/nginx/payments
-ExecStart=/bin/bash -c "/usr/local/bin/payments --config=/usr/local/etc/payments.d >>/var/log/payments/info.log 2>>/var/log/payments/error.log"
+ExecStart=/bin/bash -c "/usr/local/bin/payments --config=/usr/local/etc/payments.d 1>>/var/log/payments/info.log 2>>/var/log/payments/error.log"
 
 Restart=on-failure
 RestartSec=2

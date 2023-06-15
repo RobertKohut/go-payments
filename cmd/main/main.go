@@ -12,8 +12,8 @@ var (
 )
 
 func init() {
-	flag.Parse()
 	flag.StringVar(&configPath, "config", "", "Config path")
+	flag.Parse()
 }
 
 func main() {

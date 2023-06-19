@@ -1,10 +1,12 @@
 package server
 
 import (
+	"context"
 	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/charges"
 	"github.com/robertkohut/go-payments/pkg/customers"
 	"github.com/robertkohut/go-payments/pkg/payments"
+	"google.golang.org/grpc/status"
 	"log"
 	"net"
 
@@ -53,7 +55,9 @@ func (s *Server) Run() error {
 		log.Fatalf("Unable to listen on port %s: %v", s.config.App.Addr, err)
 	}
 
-	server := grpc.NewServer()
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(loggingInterceptor),
+	)
 
 	pb.RegisterPaymentServiceServer(server, s)
 	if err := server.Serve(listener); err != nil {
@@ -61,6 +65,22 @@ func (s *Server) Run() error {
 	}
 
 	return nil
+}
+
+func loggingInterceptor(
+	ctx context.Context,
+	req interface{},
+	info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler,
+) (interface{}, error) {
+	log.Printf("gRPC request: %s", info.FullMethod)
+	resp, err := handler(ctx, req)
+	if err != nil {
+		log.Printf("gRPC error: %v", err)
+		status, _ := status.FromError(err)
+		return nil, status.Err()
+	}
+	return resp, nil
 }
 
 func (s *Server) CloseDB() error {

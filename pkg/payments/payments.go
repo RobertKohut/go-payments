@@ -19,7 +19,7 @@ type PaymentService interface {
 func NewService(gateway string, cfg *config.Configuration) PaymentService {
 	switch gateway {
 	case "stripe":
-		return NewStripeService(cfg.Stripe.SecretKey)
+		return NewStripeService(cfg.Stripe)
 	default:
 		return nil
 	}

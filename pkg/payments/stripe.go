@@ -1,6 +1,7 @@
 package payments
 
 import (
+	"github.com/robertkohut/go-payments/internal/config"
 	pb "github.com/robertkohut/go-payments/proto"
 	"github.com/stripe/stripe-go/v74"
 	"github.com/stripe/stripe-go/v74/client"
@@ -12,10 +13,10 @@ type stripeService struct {
 	client         *client.API
 }
 
-func NewStripeService(key string) PaymentService {
+func NewStripeService(cfg *config.StripeConfig) PaymentService {
 	return &stripeService{
-		publishableKey: key,
-		client:         client.New(key, nil),
+		publishableKey: cfg.PublishableKey,
+		client:         client.New(cfg.SecretKey, nil),
 	}
 }
 

@@ -2,11 +2,11 @@ package customers
 
 import (
 	"database/sql"
-	"errors"
 	"github.com/jmoiron/sqlx"
 	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	pb "github.com/robertkohut/go-payments/proto"
+	"google.golang.org/grpc/status"
 	"log"
 )
 
@@ -81,7 +81,8 @@ func (r *repository) SelectCustomerByAccountId(sourceId, accountId int64) (*pb.C
 		&customer.PrimaryCardId,
 	); err {
 	case sql.ErrNoRows:
-		return nil, errors.New("customer not found")
+		st := status.New(404, "customer not found")
+		return nil, st.Err()
 	case nil:
 		return customer, nil
 	default:

@@ -8,13 +8,19 @@ import (
 )
 
 type stripeService struct {
-	client *client.API
+	publishableKey string
+	client         *client.API
 }
 
 func NewStripeService(key string) PaymentService {
 	return &stripeService{
-		client: client.New(key, nil),
+		publishableKey: key,
+		client:         client.New(key, nil),
 	}
+}
+
+func (s *stripeService) GetPublishableKey() (string, error) {
+	return s.publishableKey, nil
 }
 
 func (s *stripeService) CreateCustomer(customer *pb.Customer) (string, error) {

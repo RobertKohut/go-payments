@@ -6,6 +6,8 @@ import (
 )
 
 type PaymentService interface {
+	GetPublishableKey() (string, error)
+
 	CreateCustomer(customer *pb.Customer) (string, error)
 	DeleteCustomer(customer *pb.Customer) error
 

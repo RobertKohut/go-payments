@@ -7,6 +7,8 @@ import (
 )
 
 type Service interface {
+	GetPublishableKey() (string, error)
+
 	AddCustomer(customer *pb.Customer) (*string, error)
 	GetCustomerById(sourceId, accountId int64) (*pb.Customer, error)
 	DeleteCustomer(customer *pb.Customer) error
@@ -27,6 +29,10 @@ func NewService(payments payments.PaymentService, repo Repository) Service {
 		paymentSvc: payments,
 		repo:       repo,
 	}
+}
+
+func (s *service) GetPublishableKey() (string, error) {
+	return s.paymentSvc.GetPublishableKey()
 }
 
 func (s *service) GetCustomerById(sourceId, accountId int64) (*pb.Customer, error) {

@@ -17,8 +17,8 @@ func setupServices() (Service, error) {
 	}
 
 	s := NewService(
-		payments.NewStripeService(conf.Stripe.SecretKey),
-		NewRepository(db),
+		payments.NewStripeService(conf.Stripe),
+		NewRepository(db, nil),
 	)
 
 	return s, err

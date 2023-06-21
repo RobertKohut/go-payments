@@ -69,6 +69,13 @@ func (s *Server) AddCustomerPaymentMethod(ctx context.Context, req *pb.AddCustom
 		return nil, err
 	}
 
+	if len(customer.Cards) == 0 {
+		err = s.svc.CustomerSvc.SetCustomerPrimaryPaymentMethod(customer, c)
+		if err != nil {
+			log.Println("Customer -> AddCustomerPaymentMethod():", err)
+		}
+	}
+
 	log.Println("AddCustomerPaymentMethod", c)
 
 	resp := &pb.AddCustomerPaymentMethodResponse{

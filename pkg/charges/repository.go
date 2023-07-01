@@ -37,8 +37,9 @@ func (r *repository) InsertCharge(charge *pb.Charge) (int64, error) {
                      pm_id, 
                      amount, 
                      currency_id, 
+                     description,
                      status)
-    		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	result, err := r.db.Exec(
 		stmt,
@@ -49,6 +50,7 @@ func (r *repository) InsertCharge(charge *pb.Charge) (int64, error) {
 		charge.GetPmId(),
 		charge.GetAmount(),
 		charge.GetCurrencyId(),
+		charge.GetDescription(),
 		charge.GetStatus(),
 	)
 	if err != nil {

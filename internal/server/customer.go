@@ -195,7 +195,7 @@ func (s *Server) CreateCharge(ctx context.Context, req *pb.CreateChargeRequest) 
 	if cardId == 0 {
 		cardId = customer.GetPrimaryCardId()
 
-		// No primary card was set. Use the first card
+		// TODO: No primary card was set. Use the first card
 		if cardId == 0 {
 			return nil, fmt.Errorf("%w: %s", errInvalidInput, errNoPrimaryCardSet)
 		}

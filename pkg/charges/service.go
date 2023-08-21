@@ -48,7 +48,9 @@ func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Ca
 	}
 
 	hdInvoiceId, _ := s.hd.Encode([]int64{chargeId, metadata.HDChargeId})
-	charge.Description = "Precursor Invoice " + hdInvoiceId
+	if charge.Description == "" {
+		charge.Description = "Invoice " + hdInvoiceId
+	}
 
 	extId, err := s.paymentSvc.CreateCharge(customer, card, charge)
 	if err != nil {

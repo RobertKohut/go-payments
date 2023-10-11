@@ -2,12 +2,12 @@ package charges
 
 import (
 	"errors"
-	structpb "github.com/golang/protobuf/ptypes/struct"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"github.com/jmoiron/sqlx"
 	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	pb "github.com/robertkohut/go-payments/proto"
+	"google.golang.org/protobuf/types/known/structpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
 )
 
@@ -183,15 +183,15 @@ func (r *repository) scanCharges(rows *sqlx.Rows) ([]*pb.Charge, error) {
 }
 
 // Convert a time.Time to a google.protobuf.Timestamp
-func timeToTimestamp(t time.Time) *timestamp.Timestamp {
-	return &timestamp.Timestamp{
+func timeToTimestamp(t time.Time) *timestamppb.Timestamp {
+	return &timestamppb.Timestamp{
 		Seconds: t.Unix(),
 		Nanos:   int32(t.UnixNano() % 1e9),
 	}
 }
 
 // Convert a google.protobuf.Timestamp to a time.Time
-func timestampToTime(ts *timestamp.Timestamp) time.Time {
+func timestampToTime(ts *timestamppb.Timestamp) time.Time {
 	return time.Unix(ts.Seconds, int64(ts.Nanos)).UTC()
 }
 

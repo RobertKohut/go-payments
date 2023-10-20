@@ -8,6 +8,8 @@ import (
 type PaymentService interface {
 	GetPublishableKey() (string, error)
 
+	CreateAccount(agent *pb.UserAgent, tenant *pb.Tenant) (string, error)
+
 	CreateCustomer(customer *pb.Customer) (string, error)
 	DeleteCustomer(customer *pb.Customer) error
 

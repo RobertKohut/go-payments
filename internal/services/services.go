@@ -5,11 +5,13 @@ import (
 	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/charges"
 	"github.com/robertkohut/go-payments/pkg/customers"
+	"github.com/robertkohut/go-payments/pkg/tenants"
 )
 
 type Services struct {
 	DB          *sqlx.DB
 	HashId      *hashid.Service
+	TenantSvc   tenants.Service
 	CustomerSvc customers.Service
 	ChargeSvc   charges.Service
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/robertkohut/go-payments/pkg/charges"
 	"github.com/robertkohut/go-payments/pkg/customers"
 	"github.com/robertkohut/go-payments/pkg/payments"
+	"github.com/robertkohut/go-payments/pkg/tenants"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
@@ -33,6 +34,7 @@ func NewServer(cfg *config.Configuration) *Server {
 	hashIdService, _ := hashid.New(&cfg.HashId)
 
 	ps := payments.NewService("stripe", cfg)
+	tenantSvc := tenants.NewService(ps)
 	customerSvc := customers.NewService(ps, customers.NewRepository(db, hashIdService))
 	chargesSvc := charges.NewService(ps, charges.NewRepository(db, hashIdService), hashIdService)
 
@@ -41,6 +43,7 @@ func NewServer(cfg *config.Configuration) *Server {
 		svc: &services.Services{
 			DB:          db,
 			HashId:      hashIdService,
+			TenantSvc:   tenantSvc,
 			CustomerSvc: customerSvc,
 			ChargeSvc:   chargesSvc,
 		},

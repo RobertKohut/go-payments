@@ -7,6 +7,39 @@ option go_package = "github.com/robertkohut/go-payments/proto/payments";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/struct.proto";
 
+message UserAgent {
+  string ip = 1;
+  string user_agent = 2;
+}
+
+message Tenant {
+  int64 id = 1;
+  string legal_name = 2;
+  BusinessProfile business_profile = 3;
+  bool tos_accepted = 4;
+}
+
+message BusinessProfile {
+  string mcc = 1;
+  string business_type = 2;
+  string name = 3;
+  string tax_id = 4;
+  string country = 5;
+  string website = 6;
+  string email = 7;
+  string phone = 8;
+  Address address = 9;
+}
+
+message Address {
+  string line1 = 1;
+  string line2 = 2;
+  string city = 3;
+  string state = 4;
+  string postal_code = 5;
+  string country = 6;
+}
+
 message Customer {
   int64 id = 1 [json_name = "-"];
   string id_str = 2 [json_name = "id"];
@@ -51,6 +84,8 @@ message Charge {
 service PaymentService {
   rpc GetPublishableKey(GetPublishableKeyRequest) returns (GetPublishableKeyResponse) {}
 
+  rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse) {}
+
   rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
   rpc GetCustomerById(GetCustomerByIdRequest) returns (GetCustomerByIdResponse) {}
 
@@ -60,11 +95,6 @@ service PaymentService {
 
   rpc CreateCharge(CreateChargeRequest) returns (CreateChargeResponse) {}
   rpc RetrieveCustomerCharges(RetrieveCustomerChargesRequest) returns (RetrieveCustomerChargesResponse) {}
-
-  // Invoices
-  //  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse);
-  //  rpc GetInvoiceById(GetInvoiceByIdRequest) returns (GetInvoiceByIdResponse);
-  //  rpc GetInvoicesByCustomerId(GetInvoicesByCustomerIdRequest) returns (GetInvoicesByCustomerIdResponse);
 }
 
 message GetPublishableKeyRequest {
@@ -74,6 +104,16 @@ message GetPublishableKeyRequest {
 
 message GetPublishableKeyResponse {
   string publishable_key = 1;
+}
+
+message CreateTenantRequest {
+  UserAgent user_agent = 1;
+  BusinessProfile business_profile = 2;
+  bool tos_accepted = 3;
+}
+
+message CreateTenantResponse {
+  int64 id = 1;
 }
 
 message CreateCustomerRequest {

@@ -1,11 +1,13 @@
 package payments
 
 import (
+	"errors"
 	"github.com/robertkohut/go-payments/internal/config"
 	pb "github.com/robertkohut/go-payments/proto"
 	"github.com/stripe/stripe-go/v74"
 	"github.com/stripe/stripe-go/v74/client"
 	"log"
+	"time"
 )
 
 type stripeService struct {
@@ -22,6 +24,102 @@ func NewStripeService(cfg *config.StripeConfig) PaymentService {
 
 func (s *stripeService) GetPublishableKey() (string, error) {
 	return s.publishableKey, nil
+}
+
+func (s *stripeService) validateBusinessProfile(b *pb.BusinessProfile) error {
+	if b.GetCountry() == "" {
+		return errors.New("country is required")
+	}
+
+	businessType := b.GetBusinessType()
+	if businessType == "" {
+		return errors.New("business type is required")
+	}
+
+	if businessType != "individual" && businessType != "company" && businessType != "non_profit" {
+		return errors.New("business type must be individual, company or non_profit")
+	}
+
+	if b.GetName() == "" {
+		return errors.New("company name is required")
+	}
+
+	return nil
+}
+
+func (s *stripeService) getStripeBusinessType(businessType string) (stripe.AccountBusinessType, error) {
+	switch businessType {
+	case "individual":
+		return stripe.AccountBusinessTypeIndividual, nil
+	case "company":
+		return stripe.AccountBusinessTypeCompany, nil
+	case "non_profit":
+		return stripe.AccountBusinessTypeNonProfit, nil
+	default:
+		return "", errors.New("invalid business type")
+	}
+}
+
+func (s *stripeService) CreateAccount(agent *pb.UserAgent, tenant *pb.Tenant) (string, error) {
+	bp := tenant.GetBusinessProfile()
+
+	err := s.validateBusinessProfile(bp)
+	if err != nil {
+		return "", err
+	}
+
+	if tenant.GetTosAccepted() == false {
+		return "", errors.New("terms of service must be accepted")
+	}
+
+	businessType, err := s.getStripeBusinessType(bp.GetBusinessType())
+	if err != nil {
+		return "", err
+	}
+
+	params := &stripe.AccountParams{
+		Country:      stripe.String(bp.GetCountry()),
+		BusinessType: stripe.String(string(businessType)),
+		Company: &stripe.AccountCompanyParams{
+			Name: stripe.String(tenant.GetLegalName()),
+			Address: &stripe.AddressParams{
+				Line1:      stripe.String(bp.GetAddress().GetLine1()),
+				Line2:      stripe.String(bp.GetAddress().GetLine2()),
+				City:       stripe.String(bp.GetAddress().GetCity()),
+				State:      stripe.String(bp.GetAddress().GetState()),
+				PostalCode: stripe.String(bp.GetAddress().GetPostalCode()),
+				Country:    stripe.String(bp.GetCountry()),
+			},
+			Phone: stripe.String(bp.GetPhone()),
+			TaxID: stripe.String(bp.GetTaxId()),
+		},
+		BusinessProfile: &stripe.AccountBusinessProfileParams{
+			Name: stripe.String(bp.Name),
+		},
+		Type: stripe.String(string(stripe.AccountTypeCustom)),
+		Capabilities: &stripe.AccountCapabilitiesParams{
+			CardPayments: &stripe.AccountCapabilitiesCardPaymentsParams{
+				Requested: stripe.Bool(true),
+			},
+			Transfers: &stripe.AccountCapabilitiesTransfersParams{
+				Requested: stripe.Bool(true),
+			},
+		},
+		TOSAcceptance: &stripe.AccountTOSAcceptanceParams{
+			Date:      stripe.Int64(time.Now().Unix()),
+			IP:        stripe.String(agent.GetIp()),
+			UserAgent: stripe.String(agent.GetUserAgent()),
+		},
+	}
+
+	a, err := s.client.Accounts.New(params)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("Created stripe account: ", a.ID)
+
+	return a.ID, nil
 }
 
 func (s *stripeService) CreateCustomer(customer *pb.Customer) (string, error) {

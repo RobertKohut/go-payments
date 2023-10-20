@@ -20,6 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 
 const (
 	PaymentService_GetPublishableKey_FullMethodName               = "/payments.PaymentService/GetPublishableKey"
+	PaymentService_CreateTenant_FullMethodName                    = "/payments.PaymentService/CreateTenant"
 	PaymentService_CreateCustomer_FullMethodName                  = "/payments.PaymentService/CreateCustomer"
 	PaymentService_GetCustomerById_FullMethodName                 = "/payments.PaymentService/GetCustomerById"
 	PaymentService_AddCustomerPaymentMethod_FullMethodName        = "/payments.PaymentService/AddCustomerPaymentMethod"
@@ -34,6 +35,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaymentServiceClient interface {
 	GetPublishableKey(ctx context.Context, in *GetPublishableKeyRequest, opts ...grpc.CallOption) (*GetPublishableKeyResponse, error)
+	CreateTenant(ctx context.Context, in *CreateTenantRequest, opts ...grpc.CallOption) (*CreateTenantResponse, error)
 	CreateCustomer(ctx context.Context, in *CreateCustomerRequest, opts ...grpc.CallOption) (*CreateCustomerResponse, error)
 	GetCustomerById(ctx context.Context, in *GetCustomerByIdRequest, opts ...grpc.CallOption) (*GetCustomerByIdResponse, error)
 	AddCustomerPaymentMethod(ctx context.Context, in *AddCustomerPaymentMethodRequest, opts ...grpc.CallOption) (*AddCustomerPaymentMethodResponse, error)
@@ -54,6 +56,15 @@ func NewPaymentServiceClient(cc grpc.ClientConnInterface) PaymentServiceClient {
 func (c *paymentServiceClient) GetPublishableKey(ctx context.Context, in *GetPublishableKeyRequest, opts ...grpc.CallOption) (*GetPublishableKeyResponse, error) {
 	out := new(GetPublishableKeyResponse)
 	err := c.cc.Invoke(ctx, PaymentService_GetPublishableKey_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) CreateTenant(ctx context.Context, in *CreateTenantRequest, opts ...grpc.CallOption) (*CreateTenantResponse, error) {
+	out := new(CreateTenantResponse)
+	err := c.cc.Invoke(ctx, PaymentService_CreateTenant_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +139,7 @@ func (c *paymentServiceClient) RetrieveCustomerCharges(ctx context.Context, in *
 // for forward compatibility
 type PaymentServiceServer interface {
 	GetPublishableKey(context.Context, *GetPublishableKeyRequest) (*GetPublishableKeyResponse, error)
+	CreateTenant(context.Context, *CreateTenantRequest) (*CreateTenantResponse, error)
 	CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error)
 	GetCustomerById(context.Context, *GetCustomerByIdRequest) (*GetCustomerByIdResponse, error)
 	AddCustomerPaymentMethod(context.Context, *AddCustomerPaymentMethodRequest) (*AddCustomerPaymentMethodResponse, error)
@@ -144,6 +156,9 @@ type UnimplementedPaymentServiceServer struct {
 
 func (UnimplementedPaymentServiceServer) GetPublishableKey(context.Context, *GetPublishableKeyRequest) (*GetPublishableKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPublishableKey not implemented")
+}
+func (UnimplementedPaymentServiceServer) CreateTenant(context.Context, *CreateTenantRequest) (*CreateTenantResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateTenant not implemented")
 }
 func (UnimplementedPaymentServiceServer) CreateCustomer(context.Context, *CreateCustomerRequest) (*CreateCustomerResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateCustomer not implemented")
@@ -193,6 +208,24 @@ func _PaymentService_GetPublishableKey_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PaymentServiceServer).GetPublishableKey(ctx, req.(*GetPublishableKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_CreateTenant_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateTenantRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).CreateTenant(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: PaymentService_CreateTenant_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).CreateTenant(ctx, req.(*CreateTenantRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -333,6 +366,10 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPublishableKey",
 			Handler:    _PaymentService_GetPublishableKey_Handler,
+		},
+		{
+			MethodName: "CreateTenant",
+			Handler:    _PaymentService_CreateTenant_Handler,
 		},
 		{
 			MethodName: "CreateCustomer",

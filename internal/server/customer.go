@@ -186,6 +186,19 @@ func (s *Server) CreateCharge(ctx context.Context, req *pb.CreateChargeRequest) 
 	charge := req.GetCharge()
 	cardId := charge.GetPmId()
 
+	if req.AccountId == -1 {
+		charge, err := s.svc.ChargeSvc.ChargeOneTimePayment(req.GetCard(), charge)
+		if err != nil {
+			return nil, err
+		}
+
+		resp := &pb.CreateChargeResponse{
+			Charge: charge,
+		}
+
+		return resp, nil
+	}
+
 	customer, err := s.svc.CustomerSvc.GetCustomerById(req.GetSourceId(), req.GetAccountId())
 	if err != nil {
 		return nil, err

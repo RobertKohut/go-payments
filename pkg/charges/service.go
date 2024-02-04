@@ -12,6 +12,7 @@ import (
 type Service interface {
 	ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
 	GetCustomerCharges(customer *pb.Customer, filter *pb.Filters) ([]*pb.Charge, error)
+	ChargeOneTimePayment(card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
 }
 
 type service struct {
@@ -35,6 +36,21 @@ func (s *service) getCurrencyIdByCode(code string) int64 {
 	}
 
 	return id
+}
+
+func (s *service) ChargeOneTimePayment(card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {
+	if
+
+	extId, err := s.paymentSvc.CreateCharge(nil, card, charge)
+	if err != nil {
+		charge.Status = "failed"
+		_ = s.repo.UpdateCharge(charge)
+		return nil, err
+	}
+
+	charge.ExtId = *extId
+
+	return charge, nil
 }
 
 func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {

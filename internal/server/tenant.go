@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	pb "github.com/robertkohut/go-payments/proto"
+	"log"
 )
 
 func (s *Server) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) (*pb.CreateTenantResponse, error) {
@@ -29,4 +30,18 @@ func (s *Server) CreateTenant(ctx context.Context, req *pb.CreateTenantRequest) 
 	}
 
 	return resp, nil
+}
+
+func (s *Server) ValidateTenantApiKey(apiKey string) bool {
+	if apiKey == "cet" {
+		return true
+	}
+
+	log.Println("Invalid API key provided")
+
+	return false
+}
+
+func (s *Server) GetTenantExtId(ctx context.Context) (string, error) {
+	return "acct_1OeVDaPtwlB23Hm0", nil
 }

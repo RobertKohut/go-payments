@@ -61,6 +61,7 @@ message Card {
   string last4 = 5;
   uint32 exp_month = 6;
   uint32 exp_year = 7;
+  string pm_id = 8;
 }
 
 message Charge {
@@ -172,6 +173,7 @@ message CreateChargeRequest {
   int64 account_id = 2;
   int64 invoice_id = 3; // Optional: The invoice ID to associate with this charge.
   Charge charge = 4;
+  Card card = 5;
 }
 
 message CreateChargeResponse {

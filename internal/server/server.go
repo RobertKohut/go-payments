@@ -7,12 +7,15 @@ import (
 	"github.com/robertkohut/go-payments/pkg/customers"
 	"github.com/robertkohut/go-payments/pkg/payments"
 	"github.com/robertkohut/go-payments/pkg/tenants"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"log"
 	"net"
 
 	pb "github.com/robertkohut/go-payments/proto"
 
+	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/robertkohut/go-payments/internal/config"
 	"github.com/robertkohut/go-payments/internal/services"
 	"github.com/robertkohut/go-payments/internal/services/repository"
@@ -59,7 +62,10 @@ func (s *Server) Run() error {
 	}
 
 	server := grpc.NewServer(
-		grpc.UnaryInterceptor(loggingInterceptor),
+		grpc.UnaryInterceptor(grpc_middleware.ChainUnaryServer(
+			s.loggingInterceptor,
+			s.apiKeyInterceptor,
+		)),
 	)
 
 	pb.RegisterPaymentServiceServer(server, s)
@@ -70,7 +76,27 @@ func (s *Server) Run() error {
 	return nil
 }
 
-func loggingInterceptor(
+func (s *Server) apiKeyInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Errorf(codes.InvalidArgument, "missing required metadata")
+	}
+
+	apiKeys, ok := md["api-key"]
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "API key is missing")
+	}
+
+	apiKey := apiKeys[0]
+
+	if !s.ValidateTenantApiKey(apiKey) {
+		return nil, status.Errorf(codes.PermissionDenied, "invalid API key")
+	}
+
+	return handler(ctx, req)
+}
+
+func (s *Server) loggingInterceptor(
 	ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,

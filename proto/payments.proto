@@ -61,7 +61,7 @@ message Card {
   string last4 = 5;
   uint32 exp_month = 6;
   uint32 exp_year = 7;
-  string pm_id = 8;
+  string payment_method = 8;
 }
 
 message Charge {

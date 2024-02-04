@@ -1,6 +1,7 @@
 package payments
 
 import (
+	"context"
 	"github.com/robertkohut/go-payments/internal/config"
 	pb "github.com/robertkohut/go-payments/proto"
 )
@@ -15,7 +16,7 @@ type PaymentService interface {
 
 	AddCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) (*pb.Card, error)
 	RemoveCustomerPaymentMethod(customer *pb.Customer, card *pb.Card) error
-	CreateCharge(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error)
+	CreateCharge(ctx context.Context, customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error)
 }
 
 func NewService(gateway string, cfg *config.Configuration) PaymentService {

@@ -37,7 +37,7 @@ func NewServer(cfg *config.Configuration) *Server {
 	hashIdService, _ := hashid.New(&cfg.HashId)
 
 	ps := payments.NewService("stripe", cfg)
-	tenantSvc := tenants.NewService(ps)
+	tenantSvc := tenants.NewService(tenants.NewRepository(db, hashIdService), ps)
 	customerSvc := customers.NewService(ps, customers.NewRepository(db, hashIdService))
 	chargesSvc := charges.NewService(ps, charges.NewRepository(db, hashIdService), hashIdService)
 
@@ -87,11 +87,21 @@ func (s *Server) apiKeyInterceptor(ctx context.Context, req interface{}, info *g
 		return nil, status.Errorf(codes.Unauthenticated, "API key is missing")
 	}
 
-	apiKey := apiKeys[0]
+	resources, ok := md["resource"]
+	if !ok {
+		return nil, status.Errorf(codes.Unauthenticated, "resource is missing")
+	}
 
-	if !s.ValidateTenantApiKey(apiKey) {
+	apiKey := apiKeys[0]
+	resource := resources[0]
+
+	t, err := s.svc.TenantSvc.GetTenantByApiKey(resource, apiKey, "stripe")
+	if err != nil {
 		return nil, status.Errorf(codes.PermissionDenied, "invalid API key")
 	}
+
+	// put the tenant gateway in the context
+	ctx = context.WithValue(ctx, "tenant-gateway", t.ExternalId)
 
 	return handler(ctx, req)
 }

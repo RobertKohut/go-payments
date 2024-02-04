@@ -17,6 +17,7 @@ message Tenant {
   string legal_name = 2;
   BusinessProfile business_profile = 3;
   bool tos_accepted = 4;
+  string external_id = 5;
 }
 
 message BusinessProfile {

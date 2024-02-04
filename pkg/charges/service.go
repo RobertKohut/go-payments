@@ -1,6 +1,7 @@
 package charges
 
 import (
+	"context"
 	"github.com/robertkohut/go-payments/internal/services/hashid"
 	"github.com/robertkohut/go-payments/pkg/metadata"
 	"github.com/robertkohut/go-payments/pkg/payments"
@@ -10,9 +11,9 @@ import (
 )
 
 type Service interface {
-	ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
+	ChargeCustomerPaymentMethod(ctx context.Context, customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
 	GetCustomerCharges(customer *pb.Customer, filter *pb.Filters) ([]*pb.Charge, error)
-	ChargeOneTimePayment(card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
+	ChargeOneTimePayment(ctx context.Context, card *pb.Card, charge *pb.Charge) (*pb.Charge, error)
 }
 
 type service struct {
@@ -38,10 +39,9 @@ func (s *service) getCurrencyIdByCode(code string) int64 {
 	return id
 }
 
-func (s *service) ChargeOneTimePayment(card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {
-	if
+func (s *service) ChargeOneTimePayment(ctx context.Context, card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {
 
-	extId, err := s.paymentSvc.CreateCharge(nil, card, charge)
+	extId, err := s.paymentSvc.CreateCharge(ctx, nil, card, charge)
 	if err != nil {
 		charge.Status = "failed"
 		_ = s.repo.UpdateCharge(charge)
@@ -53,7 +53,7 @@ func (s *service) ChargeOneTimePayment(card *pb.Card, charge *pb.Charge) (*pb.Ch
 	return charge, nil
 }
 
-func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {
+func (s *service) ChargeCustomerPaymentMethod(ctx context.Context, customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*pb.Charge, error) {
 	charge.GatewayId = customer.GatewayId
 	charge.CustomerId = customer.Id
 	charge.CurrencyId = s.getCurrencyIdByCode(charge.Currency)
@@ -68,7 +68,7 @@ func (s *service) ChargeCustomerPaymentMethod(customer *pb.Customer, card *pb.Ca
 		charge.Description = "Invoice " + hdInvoiceId
 	}
 
-	extId, err := s.paymentSvc.CreateCharge(customer, card, charge)
+	extId, err := s.paymentSvc.CreateCharge(ctx, customer, card, charge)
 	if err != nil {
 		charge.Status = "failed"
 		_ = s.repo.UpdateCharge(charge)

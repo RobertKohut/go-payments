@@ -7,14 +7,17 @@ import (
 
 type Service interface {
 	AddTenant(agent *pb.UserAgent, tenant *pb.Tenant) (string, error)
+	GetTenantByApiKey(source, apiKey, gateway string) (*pb.Tenant, error)
 }
 
 type service struct {
+	repo       Repository
 	paymentSvc payments.PaymentService
 }
 
-func NewService(payments payments.PaymentService) Service {
+func NewService(repo Repository, payments payments.PaymentService) Service {
 	return &service{
+		repo:       repo,
 		paymentSvc: payments,
 	}
 }
@@ -26,4 +29,13 @@ func (s *service) AddTenant(agent *pb.UserAgent, tenant *pb.Tenant) (string, err
 	}
 
 	return tenantExtId, nil
+}
+
+func (s *service) GetTenantByApiKey(source, apiKey, gateway string) (*pb.Tenant, error) {
+	tenant, err := s.repo.SelectTenantByApiKey(source, apiKey, gateway)
+	if err != nil {
+		return nil, err
+	}
+
+	return tenant, nil
 }

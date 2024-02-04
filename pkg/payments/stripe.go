@@ -1,6 +1,7 @@
 package payments
 
 import (
+	"context"
 	"errors"
 	"github.com/robertkohut/go-payments/internal/config"
 	pb "github.com/robertkohut/go-payments/proto"
@@ -178,13 +179,27 @@ func (s *stripeService) RemoveCustomerPaymentMethod(_ *pb.Customer, card *pb.Car
 	return nil
 }
 
-func (s *stripeService) CreateCharge(customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error) {
+func (s *stripeService) CreateCharge(ctx context.Context, customer *pb.Customer, card *pb.Card, charge *pb.Charge) (*string, error) {
+	tenant := ctx.Value("tenant-gateway").(string)
+
 	params := &stripe.PaymentIntentParams{
 		Amount:        stripe.Int64(charge.GetAmount()),
 		Currency:      stripe.String(string(stripe.CurrencyUSD)),
-		Customer:      stripe.String(customer.GetExtId()),
 		PaymentMethod: stripe.String(card.GetExtId()),
 		Description:   stripe.String(charge.GetDescription()),
+	}
+
+	if tenant != "" {
+		params.ApplicationFeeAmount = stripe.Int64(200)
+		params.Params = stripe.Params{
+			StripeAccount: stripe.String(tenant),
+		}
+
+		params.PaymentMethodTypes = stripe.StringSlice([]string{
+			"card",
+		})
+	} else {
+		params.Customer = stripe.String(customer.GetExtId())
 	}
 
 	pi, err := s.client.PaymentIntents.New(params)
@@ -196,6 +211,12 @@ func (s *stripeService) CreateCharge(customer *pb.Customer, card *pb.Card, charg
 
 	confirmParams := &stripe.PaymentIntentConfirmParams{
 		PaymentMethod: stripe.String(card.GetExtId()), // Card ID.
+	}
+
+	if tenant != "" {
+		confirmParams.Params = stripe.Params{
+			StripeAccount: stripe.String(tenant),
+		}
 	}
 
 	pi, err = s.client.PaymentIntents.Confirm(pi.ID, confirmParams)
